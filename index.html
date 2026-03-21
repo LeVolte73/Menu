@@ -130,7 +130,7 @@ body{font-family:"Jost",sans-serif;background:#f5ede0;color:#1a1208;}
 .admin-logo{font-family:"Cinzel",serif;font-size:15px;letter-spacing:.18em;color:var(--gold-light);}
 .header-actions{display:flex;align-items:center;gap:8px;}
 .btn-theme{background:none;border:1px solid rgba(255,255,255,.15);color:#9a8a72;padding:6px 10px;cursor:pointer;font-size:16px;border-radius:3px;}
-.admin-body{display:grid;grid-template-columns:1fr;gap:20px;padding:20px;max-width:800px;margin:0 auto;}
+.admin-body{display:grid;grid-template-columns:1fr 320px;gap:20px;padding:20px;max-width:1100px;margin:0 auto;}
 
 .admin-left{}
 .admin-right{}
@@ -528,7 +528,33 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold);}
 
     </div>
 
-    
+    <div class="admin-right">
+
+      <!-- GitHub Publish -->
+      <div class="card">
+        <div class="sec-title">🚀 Pubblica su GitHub</div>
+        <div style="font-size:10px;color:#7a6a52;margin-bottom:10px;line-height:1.5;">Configura una volta. Dopo ogni modifica clicca <b>Pubblica</b> — il QR si aggiorna senza ristampe.</div>
+        <div class="field"><label>Repository (utente/repo)</label><input id="ghRepo" type="text" placeholder="carriera2013/Menu" oninput="saveGhSettings()"></div>
+        <div class="field"><label>Token GitHub</label><input id="ghToken" type="password" placeholder="github_pat_..." oninput="saveGhSettings()"></div>
+        <div class="form-grid">
+          <div class="field"><label>Branch</label><input id="ghBranch" type="text" placeholder="main" oninput="saveGhSettings()"></div>
+          <div class="field"><label>File</label><input id="ghFile" type="text" placeholder="index.html" oninput="saveGhSettings()"></div>
+        </div>
+        <button class="btn-add" id="ghPublishBtn" onclick="githubPublish()">🚀 Pubblica ora</button>
+        <div id="ghStatus" style="margin-top:8px;font-size:11px;font-family:'Cinzel',serif;letter-spacing:.06em;text-align:center;min-height:16px;"></div>
+      </div>
+
+      <!-- Backup -->
+      <div class="card">
+        <div class="sec-title">Backup Dati</div>
+        <div class="backup-row">
+          <button class="btn-backup" onclick="exportData()">⬇ Esporta backup</button>
+          <label class="btn-backup" style="position:relative;cursor:pointer;">⬆ Importa JSON<input type="file" accept=".json" onchange="importData(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"></label>
+        </div>
+        <button class="btn-backup" style="border-color:rgba(80,160,80,.4);color:#3a6a20;margin-top:8px;width:100%;" onclick="publishConfig()">⬇ Scarica index.html (manuale)</button>
+      </div>
+
+    </div>
   </div>
 </div>
 
