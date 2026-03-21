@@ -582,6 +582,9 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold);}
       </div>
     </div>
     <div id="menuBody"></div>
+    <div style="text-align:center;padding:8px 0;">
+      <button onclick="goAdmin()" style="background:none;border:none;color:rgba(184,134,11,.15);font-size:10px;cursor:pointer;font-family:Cinzel,serif;letter-spacing:.1em;">⚙</button>
+    </div>
     <div class="menu-footer">
       <p id="footerAllergenNote">Si prega di informare il personale di eventuali allergie alimentari</p>
       <p style="margin-top:4px;font-size:12px;opacity:.6" id="footerPriceNote">Prezzi IVA inclusa &middot; I piatti possono variare stagionalmente</p>
@@ -606,6 +609,8 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold);}
 <button id="themeToggle" onclick="toggleTheme()" style="display:none;align-items:center;justify-content:center;position:fixed;bottom:24px;right:24px;z-index:100;background:rgba(26,18,8,.8);border:1px solid rgba(184,134,11,.3);color:var(--gold);width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer;">🌙</button>
 
 <script>
+var PUBLISHED_CONFIG = null;
+
 var STATIC_TRANS = {
   "1001":{de:{name:"Gemischte italienische Aufschnittplatte",desc:"Gemischte italienische Wurstwaren"},en:{name:"Mixed Italian Charcuterie",desc:"Mixed Italian cured meats"},fr:{name:"Charcuterie italienne mixte",desc:"Charcuteries italiennes assorties"}},
   "1002":{de:{name:"Rindfleisch-Carpaccio mit Rucola und Parmesan",desc:"Mit Balsamico-Essig und nativem Olivenöl extra"},en:{name:"Beef Carpaccio with Rocket and Parmesan",desc:"With balsamic vinegar and extra virgin olive oil"},fr:{name:"Carpaccio de bœuf roquette et grana",desc:"Au vinaigre balsamique et huile d'olive extra vierge"}},
@@ -747,13 +752,18 @@ var PRELOADED_DISHES = [{"id": 1001, "name": "Affettato Misto all'Italiana", "ca
 // ── INIT ──
 function init(){
   initPinLogo();
-  var view = new URLSearchParams(window.location.search).get('view');
-  // If no view param and we're on a web server (not local admin use), show menu
-  if(!view){
-    var isLocal = window.location.protocol==='file:' || 
-                  window.location.hostname==='localhost' || 
-                  window.location.hostname==='127.0.0.1';
-    if(!isLocal) view='menu'; // on GitHub Pages, default to menu
+  var params = new URLSearchParams(window.location.search);
+  var view = params.get('view');
+  // Routing:
+  //   ?admin           → admin panel (with PIN)
+  //   ?view=menu       → menu cliente
+  //   ?view=*_preview  → anteprima
+  //   (nessun param)   → menu cliente (default per QR)
+  if(!view && !params.has('admin')){
+    view = 'menu'; // QR e URL base → sempre menu
+  }
+  if(params.has('admin') || view==='admin'){
+    view = 'admin';
   }
   if(view==='menu'){
     restName=localStorage.getItem('lv_restname')||'Le Volte';
@@ -791,7 +801,7 @@ function init(){
   }
   if(view==='closed_preview'){showV('closed');renderClosed();setTimeout(hideSplash,5000);return;}
 
-  // Admin
+  // Admin (solo via ?admin)
   showV('admin');
   requirePin();
     try{
@@ -1310,7 +1320,7 @@ var LOGO_IMG_SRC = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDB
 function menuUrl(){
   var base = (localStorage.getItem('lv_public_url')||'').replace(/\/+$/, '');
   if(!base) base = window.location.href.split('?')[0];
-  return base+'?view=menu';
+  return base; // URL base senza parametri → mostra menu
 }
 function menuUrlWithConfig(){
   var base = (localStorage.getItem('lv_public_url')||'').replace(/\/+$/, '');
@@ -1738,6 +1748,9 @@ function goPreviewClosed(){
 }
 
 function backAdmin(){
+  window.location.href=window.location.href.split('?')[0]+'?admin';
+}
+function _backAdmin_unused(){
   showV('admin');
   document.getElementById('backToAdmin').style.display='none';
   document.getElementById('themeToggle').style.display='none';
@@ -2359,6 +2372,11 @@ async function githubPublish(){
     ghSetStatus('✗ '+e.message,'#c05050');
   }
   btn.disabled=false;
+}
+
+
+function goAdmin(){
+  window.location.href = window.location.href.split('?')[0] + '?admin';
 }
 
 window.addEventListener('load',init);
