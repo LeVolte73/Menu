@@ -416,10 +416,10 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold);}
         <input id="menuPublicUrl" type="url" placeholder="https://carriera2013.github.io/Menu" oninput="debounceSaveUrl()" onblur="savePublicUrl()">
       </div>
       <div class="sec-title">QR Code</div>
-      <div class="qr-wrap" style="margin:6px 0 4px;"><div id="adminQr" style="position: relative; display: inline-block;"><div style="position: relative; display: inline-block; width: 160px; height: 160px; background: rgb(255, 255, 255);"><img width="160" height="160" style="display: block; width: 160px; height: 160px;" crossorigin="anonymous" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;ecc=M&amp;_=1774645639205&amp;data=https%3A%2F%2Flevolte73.github.io%2FMenu"><canvas width="160" height="160" style="position: absolute; top: 0px; left: 0px; pointer-events: none;"></canvas></div></div></div>
+      <div class="qr-wrap" style="margin:6px 0 4px;"><div id="adminQr" style="position: relative; display: inline-block;"><div style="position: relative; display: inline-block; width: 160px; height: 160px; background: rgb(255, 255, 255);"><img width="160" height="160" style="display: block; width: 160px; height: 160px;" crossorigin="anonymous" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;ecc=M&amp;_=1774645710657&amp;data=https%3A%2F%2Flevolte73.github.io%2FMenu"><canvas width="160" height="160" style="position: absolute; top: 0px; left: 0px; pointer-events: none;"></canvas></div></div></div>
       <div class="qr-url" id="adminQrUrl" style="cursor:pointer;" onclick="copyQrUrl()" title="Clicca per copiare URL">https://levolte73.github.io/Menu</div>
       <div id="autoPublishNote" style="font-size:9px;color:#7a6a52;font-family:'Cinzel',serif;letter-spacing:.06em;margin-top:4px;display:none;">🔄 Sincronizzazione automatica attiva</div>
-      <div id="qrRistampa" style="display:none;margin-top:5px;padding:5px 8px;background:rgba(180,50,50,.1);border:1px solid rgba(180,50,50,.3);font-size:10px;color:#c05050;font-family:'Cinzel',serif;letter-spacing:.05em;">⚠ Ristampa il QR tavoli dopo ogni modifica</div>
+      <div id="qrRistampa" style="display: block; margin-top: 5px; padding: 5px 8px; background: rgba(180, 50, 50, 0.1); border: 1px solid rgba(180, 50, 50, 0.3); font-size: 10px; color: rgb(192, 80, 80); font-family: &quot;Cinzel&quot;, serif; letter-spacing: 0.05em;">⚠ Ristampa il QR tavoli dopo ogni modifica</div>
       <div style="margin-top:6px;display:flex;gap:6px;">
         <button class="btn-ghost" style="flex:1;font-size:9px;" onclick="window.open(menuUrlWithConfig(),'_blank')">🔍 Test menu</button>
         <button class="btn-ghost" style="flex:1;font-size:9px;" onclick="showQrDebug()">⚙ Verifica</button>
@@ -430,7 +430,7 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold);}
       <div class="sec-title" style="text-align:center;">Stato attuale</div>
       <div class="status-bar" id="statusBar" style="justify-content:center;">
         <div class="status-dot closed" id="statusDot"></div>
-        <span id="statusText">—</span>
+        <span id="statusText">🔴 Chiuso</span>
       </div>
       <div class="legenda" style="text-align:center;">
         <div><span style="color:#27ae60">●</span> Pranzo</div>
@@ -608,7 +608,7 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold);}
 <button id="themeToggle" onclick="toggleTheme()" style="display:none;align-items:center;justify-content:center;position:fixed;bottom:24px;right:24px;z-index:100;background:rgba(26,18,8,.8);border:1px solid rgba(184,134,11,.3);color:var(--gold);width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer;">🌙</button>
 
 <script>
-var PUBLISHED_CONFIG = {"hours":[{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":false,"slots":[{"open":"12:00","close":"14:30"},{"open":"19:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]}],"ferie":{"active":true,"dal":"2026-03-25","al":"2026-03-30","msg":"Test"},"sera":"18:00","restName":"Le Volte","closedMsg":"Siamo attualmente chiusi. Torna presto!","address":"","phone":"","cell":"","email":""};
+var PUBLISHED_CONFIG = {"hours":[{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":false,"slots":[{"open":"12:00","close":"14:30"},{"open":"19:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]},{"enabled":true,"slots":[{"open":"10:00","close":"14:00"},{"open":"18:00","close":"22:00"}]}],"ferie":{"active":true,"dal":"2026-03-25","al":"2026-03-30","msg":"Chiusi per ferie"},"sera":"18:00","restName":"Le Volte","closedMsg":"Siamo attualmente chiusi. Torna presto!","address":"","phone":"","cell":"","email":""};
 
 var STATIC_TRANS = {
   "1001":{de:{name:"Gemischte italienische Aufschnittplatte",desc:"Gemischte italienische Wurstwaren"},en:{name:"Mixed Italian Charcuterie",desc:"Mixed Italian cured meats"},fr:{name:"Charcuterie italienne mixte",desc:"Charcuteries italiennes assorties"}},
