@@ -2308,8 +2308,9 @@ function saveGhSettings(){
 function loadGhSettings(){
   // If localStorage is empty, use GH_SETTINGS embedded in file
   if(GH_SETTINGS){
+    // Restore repo/branch/file from embedded settings, but NOT token
+    // Token must be re-entered by admin (never stored in published file)
     if(!localStorage.getItem('gh_repo')&&GH_SETTINGS.repo)    localStorage.setItem('gh_repo',GH_SETTINGS.repo);
-    if(!localStorage.getItem('gh_token')&&GH_SETTINGS.token)  localStorage.setItem('gh_token',GH_SETTINGS.token);
     if(!localStorage.getItem('gh_branch')&&GH_SETTINGS.branch)localStorage.setItem('gh_branch',GH_SETTINGS.branch);
     if(!localStorage.getItem('gh_file')&&GH_SETTINGS.file)    localStorage.setItem('gh_file',GH_SETTINGS.file);
   }
@@ -2346,8 +2347,9 @@ async function githubPublish(){
   };
   var html=document.documentElement.outerHTML;
   html=html.replace('var PUBLISHED_CONFIG = null;','var PUBLISHED_CONFIG = '+JSON.stringify(cfg)+';');
-  // Also embed GitHub settings so they survive republish
-  var ghSave={repo:repo,token:token,branch:branch,file:file};
+  // Embed GitHub settings WITHOUT token (token stays in localStorage only)
+  // GitHub blocks files containing tokens
+  var ghSave={repo:repo,token:'',branch:branch,file:file};
   html=html.replace('var GH_SETTINGS = null;','var GH_SETTINGS = '+JSON.stringify(ghSave)+';');
   
   var headers={
