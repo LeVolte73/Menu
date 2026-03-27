@@ -420,6 +420,7 @@ input:checked+.slider:before{transform:translateX(16px);background:var(--gold);}
       <div class="sec-title">QR Code</div>
       <div class="qr-wrap" style="margin:6px 0 4px;"><div id="adminQr"></div></div>
       <div class="qr-url" id="adminQrUrl" style="cursor:pointer;" onclick="copyQrUrl()" title="Clicca per copiare URL"></div>
+      <div id="autoPublishNote" style="font-size:9px;color:#7a6a52;font-family:'Cinzel',serif;letter-spacing:.06em;margin-top:4px;display:none;">🔄 Sincronizzazione automatica attiva</div>
       <div id="qrRistampa" style="display:none;margin-top:5px;padding:5px 8px;background:rgba(180,50,50,.1);border:1px solid rgba(180,50,50,.3);font-size:10px;color:#c05050;font-family:'Cinzel',serif;letter-spacing:.05em;">⚠ Ristampa il QR tavoli dopo ogni modifica</div>
       <div style="margin-top:6px;display:flex;gap:6px;">
         <button class="btn-ghost" style="flex:1;font-size:9px;" onclick="window.open(menuUrlWithConfig(),'_blank')">🔍 Test menu</button>
@@ -878,6 +879,7 @@ function saveFerie(){
   updateFerieLabel();updateStatusBar();
   showQrWarning();
   renderAdminQr();
+  autoPublishIfConfigured();
 }
 
 function updateFerieLabel(){
@@ -951,9 +953,9 @@ function toggleDaySlot(d){hoursConfig[d].enabled=document.getElementById('day-en
 function updateSlot(d,si,field,val){hoursConfig[d].slots[si][field]=val;saveHours();updateStatusBar();}
 function addSlot(d){hoursConfig[d].slots.push({open:'19:00',close:'22:30'});saveHours();renderDaysUI();}
 function removeSlot(d,si){hoursConfig[d].slots.splice(si,1);saveHours();renderDaysUI();}
-function saveHours(){localStorage.setItem('lv_hours',JSON.stringify(hoursConfig));updateStatusBar();showQrWarning();renderAdminQr();}
+function saveHours(){localStorage.setItem('lv_hours',JSON.stringify(hoursConfig));updateStatusBar();showQrWarning();renderAdminQr();autoPublishIfConfigured();}
 
-function saveSeraOra(){seraOra=document.getElementById('seraOra').value;localStorage.setItem('lv_sera_ora',seraOra);updateSeraHint();}
+function saveSeraOra(){seraOra=document.getElementById('seraOra').value;localStorage.setItem('lv_sera_ora',seraOra);updateSeraHint();autoPublishIfConfigured();}
 function updateSeraHint(){var el=document.getElementById('seraHint');if(el)el.textContent='Le Pizze appaiono dal '+seraOra;}
 
 function isOpen(){
@@ -1187,7 +1189,7 @@ function addDish(){
 
 function deleteDish(id){
   dishes=dishes.filter(function(d){return d.id!==id;});
-  save();renderDishList();renderAdminQr();
+  save();renderDishList();renderAdminQr();autoPublishIfConfigured();
 }
 
 function clearAll(){
@@ -1238,7 +1240,7 @@ function saveEditDish(id){
     d.allergens=editAllergens[String(id)].slice();
     delete editAllergens[String(id)];
   }
-  save();renderDishList();renderAdminQr();
+  save();renderDishList();renderAdminQr();autoPublishIfConfigured();
 }
 
 // ── RENDER DISH LIST ──
@@ -2297,6 +2299,7 @@ function publishConfig(){
 
 /* ── GITHUB AUTO-PUBLISH ── */
 function saveGhSettings(){
+  var note=document.getElementById('autoPublishNote');if(note)note.style.display='block';
   localStorage.setItem('gh_repo',   (document.getElementById('ghRepo')||{}).value||'');
   localStorage.setItem('gh_token',  (document.getElementById('ghToken')||{}).value||'');
   localStorage.setItem('gh_branch', (document.getElementById('ghBranch')||{}).value||'main');
@@ -2313,6 +2316,8 @@ function loadGhSettings(){
   var set=function(id,key,def){var el=document.getElementById(id);if(el)el.value=localStorage.getItem(key)||def;};
   set('ghRepo','gh_repo',''); set('ghToken','gh_token','');
   set('ghBranch','gh_branch','main'); set('ghFile','gh_file','index.html');
+  var note=document.getElementById('autoPublishNote');
+  if(note)note.style.display=(localStorage.getItem('gh_repo')&&localStorage.getItem('gh_token'))?'block':'none';
 }
 function ghSetStatus(msg,color){
   var el=document.getElementById('ghStatus');
@@ -2388,6 +2393,29 @@ async function githubPublish(){
 
 function goAdmin(){
   window.location.href = window.location.href.split('?')[0] + '?admin';
+}
+
+
+/* ── AUTO-PUBLISH ── */
+var _autoPublishTimer = null;
+var _autoPublishEnabled = false;
+
+function autoPublishIfConfigured(){
+  var repo  = localStorage.getItem('gh_repo')||'';
+  var token = localStorage.getItem('gh_token')||'';
+  if(!repo||!token) return; // not configured, skip silently
+  _autoPublishEnabled = true;
+  clearTimeout(_autoPublishTimer);
+  _autoPublishTimer = setTimeout(function(){
+    // Show subtle indicator
+    ghSetStatus('⏳ Auto-pubblicazione...','#b8860b');
+    githubPublish().then(function(){}).catch(function(){});
+  }, 4000); // wait 4 seconds after last change
+}
+
+function ghSetStatus(msg, color){
+  var el=document.getElementById('ghStatus');
+  if(el){el.textContent=msg;el.style.color=color||'#b8860b';}
 }
 
 window.addEventListener('load',init);
