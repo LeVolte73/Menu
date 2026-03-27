@@ -788,10 +788,16 @@ function init(){
       if(isOpen()){showV('menu');loadTransCache(currentLang);translateMenu(currentLang);applyTheme();renderRestInfo();setTimeout(hideSplash,5000);}
       else{showV('closed');renderClosed();applyClosedTheme();setTimeout(hideSplash,5000);}
     }
-    // Config priority: 1) PUBLISHED_CONFIG embedded in file, 2) localStorage
-    if(PUBLISHED_CONFIG){ applyConfig(PUBLISHED_CONFIG); }
-    else { applyConfig(null); }
-    showMenuOrClosed();
+    // Config priority: 1) lv_config.json from GitHub, 2) PUBLISHED_CONFIG, 3) localStorage
+    var cfgBase = window.location.href.split('?')[0].replace(/\/[^\/]*$/, '/');
+    fetch(cfgBase + 'lv_config.json?_=' + Date.now())
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+      .then(function(cfg){ applyConfig(cfg); showMenuOrClosed(); })
+      .catch(function(){
+        if(PUBLISHED_CONFIG){ applyConfig(PUBLISHED_CONFIG); }
+        else { applyConfig(null); }
+        showMenuOrClosed();
+      });
     return;
   }
   if(view==='closed_preview'){showV('closed');renderClosed();applyClosedTheme();setTimeout(hideSplash,5000);return;}
@@ -2328,14 +2334,13 @@ async function githubPublish(){
   var repo   = localStorage.getItem('gh_repo')||'';
   var token  = localStorage.getItem('gh_token')||'';
   var branch = localStorage.getItem('gh_branch')||'main';
-  var file   = localStorage.getItem('gh_file')||'index.html';
   if(!repo||!token){alert('Inserisci Repository e Token GitHub.');return;}
 
   var btn=document.getElementById('ghPublishBtn');
   btn.disabled=true;
-  ghSetStatus('⏳ Preparazione configurazione...','#b8860b');
+  ghSetStatus('⏳ Preparazione...','#b8860b');
 
-  // Build config and embed in HTML
+  // Upload ONLY the config JSON (few KB, fast)
   var h=Array.isArray(hoursConfig)&&hoursConfig.length?hoursConfig:defaultHoursConfig();
   var cfg={
     hours:h, ferie:ferieConfig, sera:seraOra||'18:00',
@@ -2345,30 +2350,22 @@ async function githubPublish(){
     cell:localStorage.getItem('lv_cell')||'',
     email:localStorage.getItem('lv_email')||''
   };
-  var html=document.documentElement.outerHTML;
-  html=html.replace('var PUBLISHED_CONFIG = null;','var PUBLISHED_CONFIG = '+JSON.stringify(cfg)+';');
-  // Embed GitHub settings WITHOUT token (token stays in localStorage only)
-  // GitHub blocks files containing tokens
-  var ghSave={repo:repo,token:'',branch:branch,file:file};
-  html=html.replace('var GH_SETTINGS = null;','var GH_SETTINGS = '+JSON.stringify(ghSave)+';');
-  
+  var cfgStr = JSON.stringify(cfg, null, 2);
+  var encoded = btoa(unescape(encodeURIComponent(cfgStr))); // small JSON, no problem
+
   var headers={
     'Authorization':'token '+token,
     'Content-Type':'application/json',
     'Accept':'application/vnd.github.v3+json'
   };
-  var apiUrl='https://api.github.com/repos/'+repo+'/contents/'+file;
+  var cfgFile = 'lv_config.json';
+  var apiUrl='https://api.github.com/repos/'+repo+'/contents/'+cfgFile;
 
   try{
     ghSetStatus('⏳ Connessione a GitHub...','#b8860b');
-    var encoded=btoa(unescape(encodeURIComponent(html)));
-
-    // Retry loop: fetch fresh SHA each attempt
     var maxTry=3; var published=false;
     for(var attempt=0; attempt<maxTry && !published; attempt++){
-      if(attempt>0){ ghSetStatus('⏳ Nuovo tentativo ('+(attempt+1)+')...','#b8860b'); await new Promise(function(r){setTimeout(r,1000);}); }
-      
-      // Fresh SHA fetch
+      if(attempt>0){ await new Promise(function(r){setTimeout(r,1000);}); }
       var sha='';
       var getRes=await fetch(apiUrl+'?ref='+branch+'&t='+Date.now(),{headers:headers});
       if(getRes.ok){ var d=await getRes.json(); sha=d.sha||''; }
@@ -2376,24 +2373,19 @@ async function githubPublish(){
         ghSetStatus('✗ Errore accesso repo ('+getRes.status+')','#c05050');
         btn.disabled=false; return;
       }
-
-      ghSetStatus('⏳ Caricamento ('+(attempt+1)+'/'+maxTry+')...','#b8860b');
       var body={
-        message:'Menu update '+new Date().toLocaleString('it-IT'),
-        content:encoded,
-        branch:branch
+        message:'Config update '+new Date().toLocaleString('it-IT'),
+        content:encoded, branch:branch
       };
-      if(sha) body.sha=sha;
-
+      if(sha)body.sha=sha;
+      ghSetStatus('⏳ Caricamento config...','#b8860b');
       var putRes=await fetch(apiUrl,{method:'PUT',headers:headers,body:JSON.stringify(body)});
       if(putRes.ok){
         ghSetStatus('✓ Pubblicato! Attivo in 1-2 minuti.','#27ae60');
         published=true;
       } else {
         var err=await putRes.json();
-        if((err.message||'').indexOf('does not match')>=0 && attempt<maxTry-1){
-          continue; // SHA conflict - retry with fresh SHA
-        }
+        if((err.message||'').indexOf('does not match')>=0 && attempt<maxTry-1) continue;
         ghSetStatus('✗ '+(err.message||putRes.status),'#c05050');
       }
     }
